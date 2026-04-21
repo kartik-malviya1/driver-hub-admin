@@ -29,13 +29,13 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Rideflow — Admin Console" },
+      { title: "Sawari Auto — Admin Console" },
       {
         name: "description",
         content: "Modern admin dashboard for ride-sharing and auto-driver fleet management.",
       },
-      { name: "author", content: "Rideflow" },
-      { property: "og:title", content: "Rideflow — Admin Console" },
+      { name: "author", content: "Sawari Auto" },
+      { property: "og:title", content: "Sawari Auto — Admin Console" },
       {
         property: "og:description",
         content: "Modern admin dashboard for ride-sharing and auto-driver fleet management.",

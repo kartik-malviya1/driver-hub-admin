@@ -26,8 +26,8 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
           <Bell className="h-[18px] w-[18px] text-foreground/70" />
           <span className="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-destructive ring-2 ring-card" />
         </button>
-        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground flex items-center justify-center font-semibold text-sm shadow-pop">
-          AS
+        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-warning text-primary-foreground flex items-center justify-center font-bold text-sm shadow-pop">
+          SA
         </div>
       </div>
     </header>

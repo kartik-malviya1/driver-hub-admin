@@ -16,10 +16,10 @@ import { VehicleBadge } from "@/components/VehicleBadge";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Overview — Rideflow Admin" },
+      { title: "Overview — Sawari Auto Admin" },
       {
         name: "description",
-        content: "Driver and trip overview for the Rideflow ride-sharing admin console.",
+        content: "Driver and trip overview for the Sawari Auto ride-sharing admin console.",
       },
     ],
   }),

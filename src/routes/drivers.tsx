@@ -11,10 +11,10 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/drivers")({
   head: () => ({
     meta: [
-      { title: "Driver Data — Rideflow Admin" },
+      { title: "Driver Data — Sawari Auto Admin" },
       {
         name: "description",
-        content: "Manage approved and pending drivers on the Rideflow platform.",
+        content: "Manage approved and pending drivers on the Sawari Auto platform.",
       },
     ],
   }),
