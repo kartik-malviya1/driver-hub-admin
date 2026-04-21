@@ -23,7 +23,7 @@ export function RegisterDriverForm({ onRegister }: Props) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [vehicleNumber, setVehicleNumber] = useState("");
-  const [vehicleType, setVehicleType] = useState<VehicleType>("Electric");
+  const [vehicleType, setVehicleType] = useState<VehicleType>("Petrol");
   const [files, setFiles] = useState<Partial<Record<DocKey, { url: string; name: string }>>>({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -133,7 +133,7 @@ export function RegisterDriverForm({ onRegister }: Props) {
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              maxLength={20}
+              maxLength={11}
               placeholder="+91 98765 43210"
               className="input-base"
             />
@@ -144,7 +144,7 @@ export function RegisterDriverForm({ onRegister }: Props) {
               type="text"
               value={vehicleNumber}
               onChange={(e) => setVehicleNumber(e.target.value.toUpperCase())}
-              maxLength={20}
+              maxLength={10}
               placeholder="DL 8C AT 7421"
               className="input-base font-mono uppercase"
             />
