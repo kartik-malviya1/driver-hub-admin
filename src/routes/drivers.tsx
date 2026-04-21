@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Search, Filter, Users, Inbox } from "lucide-react";
+import { Search, Filter, Users, Inbox, UserPlus } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { AppHeader } from "@/components/AppHeader";
 import { DriverCard } from "@/components/DriverCard";
 import { PendingDriverCard } from "@/components/PendingDriverCard";
-import { drivers } from "@/data/drivers";
+import { RegisterDriverForm } from "@/components/RegisterDriverForm";
+import { drivers as seedDrivers, type Driver } from "@/data/drivers";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/drivers")({
@@ -21,41 +22,39 @@ export const Route = createFileRoute("/drivers")({
   component: DriversPage,
 });
 
-type Tab = "approved" | "pending";
+type Tab = "approved" | "pending" | "register";
 
 function DriversPage() {
   const [tab, setTab] = useState<Tab>("approved");
   const [query, setQuery] = useState("");
-  const [pendingIds, setPendingIds] = useState(() =>
-    drivers.filter((d) => d.status === "pending").map((d) => d.id),
-  );
+  const [allDrivers, setAllDrivers] = useState<Driver[]>(seedDrivers);
+  const [resolvedIds, setResolvedIds] = useState<string[]>([]);
+
+  const matchesQuery = (d: Driver) =>
+    query === "" ||
+    d.name.toLowerCase().includes(query.toLowerCase()) ||
+    d.vehicleNumber.toLowerCase().includes(query.toLowerCase());
 
   const approved = useMemo(
-    () =>
-      drivers.filter(
-        (d) =>
-          d.status === "approved" &&
-          (query === "" ||
-            d.name.toLowerCase().includes(query.toLowerCase()) ||
-            d.vehicleNumber.toLowerCase().includes(query.toLowerCase())),
-      ),
-    [query],
+    () => allDrivers.filter((d) => d.status === "approved" && matchesQuery(d)),
+    [allDrivers, query],
   );
 
   const pending = useMemo(
     () =>
-      drivers.filter(
-        (d) =>
-          pendingIds.includes(d.id) &&
-          (query === "" ||
-            d.name.toLowerCase().includes(query.toLowerCase()) ||
-            d.vehicleNumber.toLowerCase().includes(query.toLowerCase())),
+      allDrivers.filter(
+        (d) => d.status === "pending" && !resolvedIds.includes(d.id) && matchesQuery(d),
       ),
-    [query, pendingIds],
+    [allDrivers, query, resolvedIds],
   );
 
   const handleResolve = (id: string) => {
-    setPendingIds((prev) => prev.filter((x) => x !== id));
+    setResolvedIds((prev) => [...prev, id]);
+  };
+
+  const handleRegister = (driver: Driver) => {
+    setAllDrivers((prev) => [driver, ...prev]);
+    setTab("pending");
   };
 
   return (
