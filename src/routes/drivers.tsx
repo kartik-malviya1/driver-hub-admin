@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Search, Filter, Users, Inbox } from "lucide-react";
+import { Search, Filter, Users, Inbox, UserPlus } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { AppHeader } from "@/components/AppHeader";
 import { DriverCard } from "@/components/DriverCard";
 import { PendingDriverCard } from "@/components/PendingDriverCard";
-import { drivers } from "@/data/drivers";
+import { RegisterDriverForm } from "@/components/RegisterDriverForm";
+import { drivers as seedDrivers, type Driver } from "@/data/drivers";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/drivers")({
@@ -21,41 +22,39 @@ export const Route = createFileRoute("/drivers")({
   component: DriversPage,
 });
 
-type Tab = "approved" | "pending";
+type Tab = "approved" | "pending" | "register";
 
 function DriversPage() {
   const [tab, setTab] = useState<Tab>("approved");
   const [query, setQuery] = useState("");
-  const [pendingIds, setPendingIds] = useState(() =>
-    drivers.filter((d) => d.status === "pending").map((d) => d.id),
-  );
+  const [allDrivers, setAllDrivers] = useState<Driver[]>(seedDrivers);
+  const [resolvedIds, setResolvedIds] = useState<string[]>([]);
+
+  const matchesQuery = (d: Driver) =>
+    query === "" ||
+    d.name.toLowerCase().includes(query.toLowerCase()) ||
+    d.vehicleNumber.toLowerCase().includes(query.toLowerCase());
 
   const approved = useMemo(
-    () =>
-      drivers.filter(
-        (d) =>
-          d.status === "approved" &&
-          (query === "" ||
-            d.name.toLowerCase().includes(query.toLowerCase()) ||
-            d.vehicleNumber.toLowerCase().includes(query.toLowerCase())),
-      ),
-    [query],
+    () => allDrivers.filter((d) => d.status === "approved" && matchesQuery(d)),
+    [allDrivers, query],
   );
 
   const pending = useMemo(
     () =>
-      drivers.filter(
-        (d) =>
-          pendingIds.includes(d.id) &&
-          (query === "" ||
-            d.name.toLowerCase().includes(query.toLowerCase()) ||
-            d.vehicleNumber.toLowerCase().includes(query.toLowerCase())),
+      allDrivers.filter(
+        (d) => d.status === "pending" && !resolvedIds.includes(d.id) && matchesQuery(d),
       ),
-    [query, pendingIds],
+    [allDrivers, query, resolvedIds],
   );
 
   const handleResolve = (id: string) => {
-    setPendingIds((prev) => prev.filter((x) => x !== id));
+    setResolvedIds((prev) => [...prev, id]);
+  };
+
+  const handleRegister = (driver: Driver) => {
+    setAllDrivers((prev) => [driver, ...prev]);
+    setTab("pending");
   };
 
   return (
@@ -65,8 +64,9 @@ function DriversPage() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="inline-flex items-center gap-1 p-1 rounded-2xl bg-muted/70 border border-border w-fit">
             {[
-              { key: "approved" as const, label: "Approved", count: approved.length },
-              { key: "pending" as const, label: "Pending", count: pending.length },
+              { key: "approved" as const, label: "Approved", count: approved.length, icon: null },
+              { key: "pending" as const, label: "Pending", count: pending.length, icon: null },
+              { key: "register" as const, label: "Register Driver", count: null, icon: UserPlus },
             ].map((t) => (
               <button
                 key={t.key}
@@ -74,46 +74,53 @@ function DriversPage() {
                 className={cn(
                   "relative inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl transition-all",
                   tab === t.key
-                    ? "bg-card text-foreground shadow-soft"
+                    ? t.key === "register"
+                      ? "bg-foreground text-background shadow-soft"
+                      : "bg-card text-foreground shadow-soft"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
+                {t.icon && <t.icon className="h-4 w-4" strokeWidth={2.5} />}
                 {t.label}
-                <span
-                  className={cn(
-                    "rounded-full text-[11px] font-bold px-1.5 min-w-[20px] text-center",
-                    tab === t.key
-                      ? t.key === "pending"
-                        ? "bg-warning-soft text-warning"
-                        : "bg-success-soft text-success"
-                      : "bg-muted-foreground/15 text-muted-foreground",
-                  )}
-                >
-                  {t.count}
-                </span>
+                {t.count !== null && (
+                  <span
+                    className={cn(
+                      "rounded-full text-[11px] font-bold px-1.5 min-w-[20px] text-center",
+                      tab === t.key
+                        ? t.key === "pending"
+                          ? "bg-warning-soft text-warning"
+                          : "bg-success-soft text-success"
+                        : "bg-muted-foreground/15 text-muted-foreground",
+                    )}
+                  >
+                    {t.count}
+                  </span>
+                )}
               </button>
             ))}
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search name or vehicle…"
-                className="h-10 w-full sm:w-72 rounded-xl border border-border bg-card pl-9 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-primary/40 transition"
-              />
+          {tab !== "register" && (
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search name or vehicle…"
+                  className="h-10 w-full sm:w-72 rounded-xl border border-border bg-card pl-9 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-primary/40 transition"
+                />
+              </div>
+              <button className="h-10 px-3 rounded-xl border border-border bg-card text-sm font-medium text-foreground/80 hover:bg-muted transition flex items-center gap-2 shadow-soft">
+                <Filter className="h-4 w-4" />
+                Filter
+              </button>
             </div>
-            <button className="h-10 px-3 rounded-xl border border-border bg-card text-sm font-medium text-foreground/80 hover:bg-muted transition flex items-center gap-2 shadow-soft">
-              <Filter className="h-4 w-4" />
-              Filter
-            </button>
-          </div>
+          )}
         </div>
 
-        {tab === "approved" ? (
-          approved.length > 0 ? (
+        {tab === "approved" &&
+          (approved.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
               {approved.map((d) => (
                 <DriverCard key={d.id} driver={d} />
@@ -125,25 +132,29 @@ function DriversPage() {
               title="No approved drivers found"
               hint="Try adjusting your search or filters."
             />
-          )
-        ) : pending.length > 0 ? (
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-            {pending.map((d) => (
-              <PendingDriverCard
-                key={d.id}
-                driver={d}
-                onApprove={handleResolve}
-                onReject={handleResolve}
-              />
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            icon={Inbox}
-            title="All caught up!"
-            hint="No pending driver applications to review."
-          />
-        )}
+          ))}
+
+        {tab === "pending" &&
+          (pending.length > 0 ? (
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+              {pending.map((d) => (
+                <PendingDriverCard
+                  key={d.id}
+                  driver={d}
+                  onApprove={handleResolve}
+                  onReject={handleResolve}
+                />
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              icon={Inbox}
+              title="All caught up!"
+              hint="No pending driver applications to review."
+            />
+          ))}
+
+        {tab === "register" && <RegisterDriverForm onRegister={handleRegister} />}
       </main>
     </AppShell>
   );
