@@ -71,6 +71,22 @@ export async function approveDriver(id: number) {
   return response.json();
 }
 
+export async function disableDriver(id: number) {
+  const response = await fetch(`${API_BASE_URL}/admin/drivers/${id}/disable`, {
+    method: 'PATCH',
+    headers: getAuthHeader(),
+  });
+  if (!response.ok) {
+    let msg = 'Failed to disable driver';
+    try {
+      const body = await response.json();
+      msg = body.error || body.message || msg;
+    } catch {}
+    throw new Error(msg);
+  }
+  return response.json();
+}
+
 export async function rejectDriver(id: number) {
   const response = await fetch(`${API_BASE_URL}/admin/drivers/${id}`, {
     method: 'DELETE',

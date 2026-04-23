@@ -2,7 +2,7 @@ import { CheckCircle2, Calendar, MoreVertical, Star, Hash } from "lucide-react";
 import type { Driver } from "@/data/drivers";
 import { VehicleBadge } from "./VehicleBadge";
 
-export function DriverCard({ driver }: { driver: Driver }) {
+export function DriverCard({ driver, onDisable }: { driver: Driver, onDisable?: (id: string) => void }) {
   return (
     <article className="group rounded-2xl bg-card border border-border p-5 shadow-soft hover:shadow-card hover:border-primary/30 transition-all hover:-translate-y-0.5">
       <div className="flex items-start justify-between gap-2 mb-4">
@@ -73,7 +73,10 @@ export function DriverCard({ driver }: { driver: Driver }) {
         <button className="flex-1 h-9 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition shadow-soft">
           View details
         </button>
-        <button className="h-9 px-3 rounded-xl border border-border text-xs font-semibold text-foreground/80 hover:bg-muted transition">
+        <button
+          onClick={() => onDisable?.(driver.id)}
+          className="h-9 px-3 rounded-xl border border-border text-xs font-semibold text-foreground/80 hover:bg-muted transition"
+        >
           Disable
         </button>
       </div>

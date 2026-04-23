@@ -9,7 +9,7 @@ import { PendingDriverCard } from "@/components/PendingDriverCard";
 import { RegisterDriverForm } from "@/components/RegisterDriverForm";
 import { type Driver, type VehicleType, type DriverStatus } from "@/data/drivers";
 import { cn } from "@/lib/utils";
-import { fetchDrivers, approveDriver, rejectDriver } from "@/lib/api";
+import { fetchDrivers, approveDriver, rejectDriver, disableDriver } from "@/lib/api";
 
 export const Route = createFileRoute("/drivers")({
   beforeLoad: () => {
@@ -108,6 +108,20 @@ function DriversPage() {
     }
   };
 
+  const handleDisable = async (id: string) => {
+    try {
+      await disableDriver(parseInt(id));
+      setAllDrivers(prev =>
+        prev.map(d => d.id === id ? { ...d, status: 'pending' as DriverStatus } : d)
+      );
+      toast.success("Driver disabled and moved to pending!");
+      setTab("pending");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to disable driver");
+      console.error("Disable error:", err);
+    }
+  };
+
   const handleRegister = (driver: Driver) => {
     setAllDrivers((prev) => [driver, ...prev]);
     setTab("pending");
@@ -185,7 +199,7 @@ function DriversPage() {
           (approved.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
               {approved.map((d) => (
-                <DriverCard key={d.id} driver={d} />
+                <DriverCard key={d.id} driver={d} onDisable={handleDisable} />
               ))}
             </div>
           ) : (
