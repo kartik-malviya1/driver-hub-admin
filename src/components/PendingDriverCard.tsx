@@ -76,6 +76,7 @@ export function PendingDriverCard({ driver, onApprove, onReject }: Props) {
           {docMeta.map(({ key, label, icon: Icon }) => (
             <div
               key={key}
+              onClick={() => window.open(driver.documents[key], '_blank')}
               className="group relative rounded-xl bg-card border border-border overflow-hidden hover:border-primary/40 hover:shadow-soft transition cursor-pointer"
             >
               <div className="aspect-[4/3] overflow-hidden bg-muted">

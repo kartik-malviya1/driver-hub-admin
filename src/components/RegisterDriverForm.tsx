@@ -3,6 +3,7 @@ import { Upload, User, Car, IdCard, FileText, X, CheckCircle2, Loader2 } from "l
 import { toast } from "sonner";
 import type { Driver, VehicleType } from "@/data/drivers";
 import { cn } from "@/lib/utils";
+import { registerDriver } from "@/lib/api";
 
 interface Props {
   onRegister: (driver: Driver) => void;
@@ -55,7 +56,7 @@ export function RegisterDriverForm({ onRegister }: Props) {
     files.rc &&
     files.id;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValid) {
       toast.error("Missing information", {
@@ -64,38 +65,55 @@ export function RegisterDriverForm({ onRegister }: Props) {
       return;
     }
     setSubmitting(true);
-    setTimeout(() => {
-      const id = `DRV-${Math.floor(1100 + Math.random() * 800)}`;
-      const newDriver: Driver = {
-        id,
+    try {
+      // Map frontend fields to backend expected names
+      const payload = {
         name: name.trim(),
-        phone: phone.trim(),
+        phoneNumber: phone.trim(),
         vehicleNumber: vehicleNumber.trim().toUpperCase(),
         vehicleType,
+        photoUrl: files.photo!.url,
+        licensePhotoUrl: files.license!.url,
+        rcPhotoUrl: files.rc!.url,
+        AadhaarCardPhotoUrl: files.id!.url,
+      };
+
+      const result = await registerDriver(payload);
+
+      const newDriver: Driver = {
+        id: String(result.driverId),
+        ...payload,
+        phone: payload.phoneNumber,
+        photo: payload.photoUrl,
         registrationDate: new Date().toLocaleDateString("en-GB", {
           day: "2-digit",
           month: "short",
           year: "numeric",
         }),
         status: "pending",
-        photo: files.photo!.url,
         documents: {
-          license: files.license!.url,
-          rc: files.rc!.url,
-          id: files.id!.url,
+          license: payload.licensePhotoUrl,
+          rc: payload.rcPhotoUrl,
+          id: payload.AadhaarCardPhotoUrl,
         },
       };
+
       onRegister(newDriver);
       toast.success("Driver registered", {
         description: `${newDriver.name} added to pending review queue.`,
       });
+
+      // Reset form
       setName("");
       setPhone("");
       setVehicleNumber("");
       setVehicleType("Electric");
       setFiles({});
+    } catch (error: any) {
+      toast.error("Registration failed", { description: error.message });
+    } finally {
       setSubmitting(false);
-    }, 600);
+    }
   };
 
   return (
@@ -209,11 +227,12 @@ export function RegisterDriverForm({ onRegister }: Props) {
         >
           {submitting ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" /> Registering…
+              <Loader2 className="h-4 w-4 animate-spin text-white" /> Registering…
             </>
           ) : (
             <>
-              <CheckCircle2 className="h-4 w-4" strokeWidth={2.5} /> Submit for Review
+              <CheckCircle2 className="h-4 w-4 text-white" strokeWidth={2.5} /> <span className="text-white">
+                Submit for Review</span>
             </>
           )}
         </button>

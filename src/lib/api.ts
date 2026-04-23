@@ -27,6 +27,26 @@ export async function fetchDrivers() {
   return response.json();
 }
 
+export async function registerDriver(data: any) {
+  const response = await fetch(`${API_BASE_URL}/admin/drivers`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeader(),
+    },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    let msg = 'Failed to register driver';
+    try {
+      const body = await response.json();
+      msg = body.error || body.message || msg;
+    } catch {}
+    throw new Error(msg);
+  }
+  return response.json();
+}
+
 export async function fetchPendingDrivers() {
   const response = await fetch(`${API_BASE_URL}/admin/drivers/pending`, {
     headers: getAuthHeader(),
@@ -40,7 +60,39 @@ export async function approveDriver(id: number) {
     method: 'PATCH',
     headers: getAuthHeader(),
   });
-  if (!response.ok) throw new Error('Failed to approve driver');
+  if (!response.ok) {
+    let msg = 'Failed to approve driver';
+    try {
+      const body = await response.json();
+      msg = body.error || body.message || msg;
+    } catch {}
+    throw new Error(msg);
+  }
+  return response.json();
+}
+
+export async function rejectDriver(id: number) {
+  const response = await fetch(`${API_BASE_URL}/admin/drivers/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeader(),
+  });
+  if (!response.ok) {
+    let msg = 'Failed to reject driver';
+    try {
+      const body = await response.json();
+      msg = body.error || body.message || msg;
+    } catch {}
+    throw new Error(msg);
+  }
+  return response.json();
+}
+
+export async function flushDatabase() {
+  const response = await fetch(`${API_BASE_URL}/admin/flush`, {
+    method: 'POST',
+    headers: getAuthHeader(),
+  });
+  if (!response.ok) throw new Error('Failed to flush database');
   return response.json();
 }
 

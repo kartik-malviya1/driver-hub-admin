@@ -1,6 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Search, Filter, Users, Inbox, UserPlus } from "lucide-react";
+import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { AppHeader } from "@/components/AppHeader";
 import { DriverCard } from "@/components/DriverCard";
@@ -8,7 +9,7 @@ import { PendingDriverCard } from "@/components/PendingDriverCard";
 import { RegisterDriverForm } from "@/components/RegisterDriverForm";
 import { type Driver, type VehicleType, type DriverStatus } from "@/data/drivers";
 import { cn } from "@/lib/utils";
-import { fetchDrivers, approveDriver } from "@/lib/api";
+import { fetchDrivers, approveDriver, rejectDriver } from "@/lib/api";
 
 export const Route = createFileRoute("/drivers")({
   beforeLoad: () => {
@@ -85,9 +86,25 @@ function DriversPage() {
   const handleApprove = async (id: string) => {
     try {
       await approveDriver(parseInt(id));
-      setAllDrivers(prev => prev.map(d => d.id === id ? { ...d, status: 'approved' } : d));
-    } catch (err) {
-      alert("Failed to approve driver");
+      setAllDrivers(prev =>
+        prev.map(d => d.id === id ? { ...d, status: 'approved' as DriverStatus } : d)
+      );
+      toast.success("Driver approved successfully!");
+      setTab("approved");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to approve driver");
+      console.error("Approve error:", err);
+    }
+  };
+
+  const handleReject = async (id: string) => {
+    try {
+      await rejectDriver(parseInt(id));
+      setAllDrivers(prev => prev.filter(d => d.id !== id));
+      toast.success("Application rejected and removed.");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to reject driver");
+      console.error("Reject error:", err);
     }
   };
 
@@ -187,6 +204,7 @@ function DriversPage() {
                   key={d.id}
                   driver={d}
                   onApprove={handleApprove}
+                  onReject={handleReject}
                 />
               ))}
             </div>

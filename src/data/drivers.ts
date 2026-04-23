@@ -33,7 +33,7 @@ const docs = { license: docLicense, rc: docRc, id: docId };
 
 export const drivers: Driver[] = [
   {
-    id: "DRV-1042",
+    id: "1042",
     name: "Rahul Mehta",
     photo: driver1,
     vehicleNumber: "MH 8C AT 7421",
@@ -46,7 +46,7 @@ export const drivers: Driver[] = [
     documents: docs,
   },
   {
-    id: "DRV-1043",
+    id: "1043",
     name: "Imran Sheikh",
     photo: driver2,
     vehicleNumber: "MH 02 BX 9912",
@@ -60,7 +60,7 @@ export const drivers: Driver[] = [
     documents: docs,
   },
   {
-    id: "DRV-1044",
+    id: "1044",
     name: "Aakash Verma",
     photo: driver3,
     vehicleNumber: "MH 05 MQ 4410",
@@ -74,7 +74,7 @@ export const drivers: Driver[] = [
     documents: docs,
   },
   {
-    id: "DRV-1045",
+    id: "1045",
     name: "Suresh Kumar",
     photo: driver4,
     vehicleNumber: "MH 09 PR 0021",
@@ -88,7 +88,7 @@ export const drivers: Driver[] = [
     documents: docs,
   },
   {
-    id: "DRV-1046",
+    id: "1046",
     name: "Priya Nair",
     photo: driver5,
     vehicleNumber: "MH 07 TZ 5512",
@@ -102,7 +102,7 @@ export const drivers: Driver[] = [
     documents: docs,
   },
   {
-    id: "DRV-1051",
+    id: "1051",
     name: "Vikram Singh",
     photo: driver2,
     vehicleNumber: "MH 14 KQ 8821",
@@ -113,7 +113,7 @@ export const drivers: Driver[] = [
     documents: docs,
   },
   {
-    id: "DRV-1052",
+    id: "1052",
     name: "Manoj Pillai",
     photo: driver3,
     vehicleNumber: "MH 11 AC 3344",
@@ -124,7 +124,7 @@ export const drivers: Driver[] = [
     documents: docs,
   },
   {
-    id: "DRV-1053",
+    id: "1053",
     name: "Deepa Joshi",
     photo: driver5,
     vehicleNumber: "MH 01 EE 7710",
