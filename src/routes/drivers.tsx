@@ -1,13 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, Filter, Users, Inbox, UserPlus } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { AppHeader } from "@/components/AppHeader";
 import { DriverCard } from "@/components/DriverCard";
 import { PendingDriverCard } from "@/components/PendingDriverCard";
 import { RegisterDriverForm } from "@/components/RegisterDriverForm";
-import { drivers as seedDrivers, type Driver } from "@/data/drivers";
+import { type Driver, type VehicleType, type DriverStatus } from "@/data/drivers";
 import { cn } from "@/lib/utils";
+import { fetchDrivers, approveDriver } from "@/lib/api";
 
 export const Route = createFileRoute("/drivers")({
   head: () => ({
@@ -27,8 +28,37 @@ type Tab = "approved" | "pending" | "register";
 function DriversPage() {
   const [tab, setTab] = useState<Tab>("approved");
   const [query, setQuery] = useState("");
-  const [allDrivers, setAllDrivers] = useState<Driver[]>(seedDrivers);
-  const [resolvedIds, setResolvedIds] = useState<string[]>([]);
+  const [allDrivers, setAllDrivers] = useState<Driver[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const raw = await fetchDrivers();
+        const mapped: Driver[] = raw.map((d: any) => ({
+          id: String(d.id),
+          name: d.name,
+          photo: d.photoUrl || "https://ui-avatars.com/api/?name=" + encodeURIComponent(d.name),
+          vehicleNumber: d.vehicleNumber || "N/A",
+          vehicleType: (d.vehicleType as VehicleType) || "Petrol",
+          registrationDate: new Date(d.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+          status: d.isApproved ? "approved" : "pending" as DriverStatus,
+          phone: d.phoneNumber,
+          documents: {
+            license: d.licensePhotoUrl || "",
+            rc: d.rcPhotoUrl || "",
+            id: d.AadhaarCardPhotoUrl || "",
+          },
+        }));
+        setAllDrivers(mapped);
+      } catch (err) {
+        console.error("Failed to load drivers:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
 
   const matchesQuery = (d: Driver) =>
     query === "" ||
@@ -41,15 +71,17 @@ function DriversPage() {
   );
 
   const pending = useMemo(
-    () =>
-      allDrivers.filter(
-        (d) => d.status === "pending" && !resolvedIds.includes(d.id) && matchesQuery(d),
-      ),
-    [allDrivers, query, resolvedIds],
+    () => allDrivers.filter((d) => d.status === "pending" && matchesQuery(d)),
+    [allDrivers, query],
   );
 
-  const handleResolve = (id: string) => {
-    setResolvedIds((prev) => [...prev, id]);
+  const handleApprove = async (id: string) => {
+    try {
+      await approveDriver(parseInt(id));
+      setAllDrivers(prev => prev.map(d => d.id === id ? { ...d, status: 'approved' } : d));
+    } catch (err) {
+      alert("Failed to approve driver");
+    }
   };
 
   const handleRegister = (driver: Driver) => {
@@ -119,7 +151,13 @@ function DriversPage() {
           )}
         </div>
 
-        {tab === "approved" &&
+        {loading && (
+          <div className="flex items-center justify-center py-20">
+            <p className="text-muted-foreground animate-pulse">Loading drivers...</p>
+          </div>
+        )}
+
+        {!loading && tab === "approved" &&
           (approved.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
               {approved.map((d) => (
@@ -134,15 +172,14 @@ function DriversPage() {
             />
           ))}
 
-        {tab === "pending" &&
+        {!loading && tab === "pending" &&
           (pending.length > 0 ? (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
               {pending.map((d) => (
                 <PendingDriverCard
                   key={d.id}
                   driver={d}
-                  onApprove={handleResolve}
-                  onReject={handleResolve}
+                  onApprove={handleApprove}
                 />
               ))}
             </div>
