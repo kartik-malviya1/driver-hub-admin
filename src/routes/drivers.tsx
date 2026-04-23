@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Search, Filter, Users, Inbox, UserPlus } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
@@ -11,6 +11,13 @@ import { cn } from "@/lib/utils";
 import { fetchDrivers, approveDriver } from "@/lib/api";
 
 export const Route = createFileRoute("/drivers")({
+  beforeLoad: () => {
+    if (typeof window === 'undefined') return;
+    const token = window.localStorage.getItem("admin_token");
+    if (!token) {
+      throw redirect({ to: "/" });
+    }
+  },
   head: () => ({
     meta: [
       { title: "Driver Data — Sawari Auto Admin" },

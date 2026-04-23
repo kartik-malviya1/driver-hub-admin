@@ -70,7 +70,7 @@ export function DriverCard({ driver }: { driver: Driver }) {
       </div>
 
       <div className="mt-4 flex gap-2">
-        <button className="flex-1 h-9 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition shadow-soft">
+        <button className="flex-1 h-9 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition shadow-soft">
           View details
         </button>
         <button className="h-9 px-3 rounded-xl border border-border text-xs font-semibold text-foreground/80 hover:bg-muted transition">
